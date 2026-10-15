@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_result.html" import show %}
+{% block title %}DML{% endblock %}
+{% block sub %}Data Manipulation Language: INSERT, UPDATE, DELETE, SELECT{% endblock %}
+{% block content %}
+{{ show(result) }}
+<form method="post">
+  <div class="card">
+    <div class="grid">
+      <div><label>Table</label><select name="table" id="table" onchange="loadCols()">
+        <option value="">Select a table</option>{% for t in tables %}<option {{ 'selected' if t == selected }}>{{ t }}</option>{% endfor %}</select></div>
+      <div><label>Working as user</label><select name="as_user">{% for u in users %}<option {{ 'selected' if u == user }}>{{ u }}</option>{% endfor %}</select></div>
+    </div>
+    <p class="hint">The user's privileges come from the DCL page. admin can do everything.</p>
+  </div>
+  <div class="card" style="margin-top:20px">
+    <h2>Values</h2><p class="sub">Used by INSERT (new row) and UPDATE (new values). Leave a box empty to skip it.</p>
+    <div class="grid" id="fields"><span class="hint">Choose a table to see its columns.</span></div>
+  </div>
+  <div class="card" style="margin-top:20px">
+    <h2>Condition</h2><p class="sub">Needed for UPDATE and DELETE, optional for SELECT.</p>
+    <div class="grid">
+      <div><label>Column</label><select name="where_col" id="where_col"></select></div>
+      <div><label>Operator</label><select name="where_op">{% for o in ops %}<option>{{ o }}</option>{% endfor %}</select></div>
+      <div><label>Value</label><input name="where_val" placeholder="e.g. 101"></div>
+    </div>
+    <div class="actions">
+      <button class="btn" name="op" value="insert">Insert</button>
+      <button class="btn ghost" name="op" value="update">Update</button>
+      <button class="btn red" name="op" value="delete" onclick="return confirm('Delete matching rows?')">Delete</button>
+      <button class="btn ghost" name="op" value="select">Select</button>
+    </div>
+  </div>
+</form>
+<script>
+async function loadCols() {
+  const t = document.getElementById('table').value, box = document.getElementById('fields'), w = document.getElementById('where_col');
+  w.innerHTML = '<option value="">(none)</option>';
+  if (!t) { box.innerHTML = '<span class="hint">Choose a table to see its columns.</span>'; return; }
+  const cols = await (await fetch('/columns/' + t)).json(); box.innerHTML = '';
+  cols.forEach(c => {
+    const type = c.type === 'DATE' ? 'date' : (c.type.startsWith('INT') || c.type === 'REAL') ? 'number' : 'text';
+    box.insertAdjacentHTML('beforeend', '<div><label>' + c.name + ' <span class="hint">(' + c.type + ')</span></label><input type="' + type + '" step="any" name="val_' + c.name + '"></div>');
+    w.insertAdjacentHTML('beforeend', '<option>' + c.name + '</option>');
+  });
+}
+loadCols();
+</script>
+{% endblock %}

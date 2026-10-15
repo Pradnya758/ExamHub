@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block sub %}Rank list, subject statistics and grade distribution{% endblock %}
+{% block content %}
+<div class="cols">
+  <div class="card">
+    <form method="get" class="noprint" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:8px">
+      <div style="min-width:220px"><label>Exam</label><select name="exam" onchange="this.form.submit()">
+        {% for e in exams %}<option value="{{ e.exam_id }}" {{ 'selected' if eid == e.exam_id|string }}>{{ e.subject }}</option>{% endfor %}</select></div>
+      <button type="button" class="btn ghost" onclick="window.print()">Print</button>
+    </form>
+    <h2>Rank list</h2><p class="sub">Highest marks first</p>
+    <div class="tw"><table><thead><tr><th>Rank</th><th>Student</th><th>Marks</th><th>Percent</th><th>Grade</th><th>Status</th></tr></thead><tbody>
+    {% for r in ranks %}<tr><td><span class="medal {{ 'm' ~ loop.index if loop.index <= 3 }}">{{ loop.index }}</span></td><td>{{ r.name }}</td><td>{{ r.marks|round(1) }}/{{ r.max_marks }}</td><td>{{ r.percentage }}%</td>
+      <td><span class="gr gr-{{ r.grade|replace('+','p') }}">{{ r.grade }}</span></td><td><span class="pill {{ 'pass' if r.status=='Pass' else 'fail' }}">{{ r.status }}</span></td></tr>{% endfor %}
+    </tbody></table></div>
+    {% if not ranks %}<div class="empty">No marks entered for this exam yet.</div>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Grade distribution</h2><p class="sub">For the selected exam</p>
+    {% for g, n in dist.items() %}<div class="bar"><span>{{ g }}</span><i style="width:{{ (n / dmax * 100)|round }}%"></i><b>{{ n }}</b></div>{% endfor %}
+  </div>
+</div>
+<div class="card">
+  <h2>Subject-wise statistics</h2><p class="sub">Average, highest, lowest marks and pass percentage</p>
+  <div class="tw"><table><thead><tr><th>Subject</th><th>Students</th><th>Average</th><th>Highest</th><th>Lowest</th><th>Pass %</th></tr></thead><tbody>
+  {% for s in stats %}<tr><td>{{ s.subject }}</td><td>{{ s.n }}</td><td>{{ s.avg }}</td><td>{{ s.hi|round(1) }}</td><td>{{ s.lo|round(1) }}</td><td>{{ s.pp }}%</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if not stats %}<div class="empty">No data yet.</div>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Results{% endblock %}
+{% block sub %}Result sheet, filter by student or exam{% endblock %}
+{% block content %}
+<div class="card noprint">
+  <form method="get" class="grid" style="align-items:end">
+    <div><label>Student</label><select name="student"><option value="">All students</option>
+      {% for s in studs %}<option value="{{ s.student_id }}" {{ 'selected' if sid == s.student_id|string }}>{{ s.name }}</option>{% endfor %}</select></div>
+    <div><label>Exam</label><select name="exam"><option value="">All exams</option>
+      {% for e in exams %}<option value="{{ e.exam_id }}" {{ 'selected' if eid == e.exam_id|string }}>{{ e.subject }}</option>{% endfor %}</select></div>
+    <div class="actions" style="margin:0"><button class="btn">Filter</button><a class="btn ghost" href="/results" style="display:grid;place-items:center;text-decoration:none">Clear</a><button type="button" class="btn ghost" onclick="window.print()">Print</button></div>
+  </form>
+</div>
+<div class="card">
+  <h2>Result sheet</h2><p class="sub">{{ rows|length }} result(s) - {{ passed }} passed, {{ rows|length - passed }} failed</p>
+  <div class="tw"><table class="dt">
+    <thead><tr><th>Student</th><th>ID</th><th>Subject</th><th>Marks</th><th>Percent</th><th>Grade</th><th>Status</th></tr></thead>
+    <tbody>{% for r in rows %}<tr><td>{{ r.name }}</td><td>{{ r.student_id }}</td><td>{{ r.subject }}</td><td>{{ r.marks|round(1) }}/{{ r.max_marks }}</td><td>{{ r.percentage }}%</td>
+      <td><span class="gr gr-{{ r.grade|replace('+','p') }}">{{ r.grade }}</span></td>
+      <td><span class="pill {{ 'pass' if r.status=='Pass' else 'fail' }}">{{ r.status }}</span></td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if not rows %}<div class="empty">No results match. Enter marks on the Enter Marks page.</div>{% endif %}
+</div>
+{% endblock %}

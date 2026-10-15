@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_result.html" import show %}
+{% block title %}DCL{% endblock %}
+{% block sub %}Data Control Language: CREATE USER, GRANT, REVOKE{% endblock %}
+{% block content %}
+{{ show(result) }}
+<div class="cols" style="grid-template-columns:1fr 1fr">
+  <div class="card">
+    <h2>Create user</h2><p class="sub">Add a new database user.</p>
+    <form method="post"><input type="hidden" name="action" value="create">
+      <label>Username</label><input name="username" placeholder="e.g. examiner" required>
+      <label>Password</label><input name="password" type="password" required>
+      <div class="actions"><button class="btn">Create user</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Grant or revoke</h2><p class="sub">Choose a user, a table and the privileges.</p>
+    <form method="post">
+      <div class="grid">
+        <div><label>User</label><select name="username">{% for u in users if u != 'admin' %}<option>{{ u }}</option>{% endfor %}</select></div>
+        <div><label>Table</label><select name="table">{% for t in tables %}<option>{{ t }}</option>{% endfor %}</select></div>
+      </div>
+      <label>Privileges</label>
+      <div class="checks">{% for p in all_privs %}<label><input type="checkbox" name="priv" value="{{ p }}">{{ p }}</label>{% endfor %}</div>
+      <div class="actions"><button class="btn" name="action" value="grant">Grant</button><button class="btn red" name="action" value="revoke">Revoke</button></div>
+    </form>
+  </div>
+</div>
+<div class="card">
+  <h2>Current privileges</h2><p class="sub">Test them on the DML page by choosing "Working as user".</p>
+  <div class="tw"><table><thead><tr><th>User</th><th>Table</th><th>Privileges</th></tr></thead><tbody>
+    <tr><td>admin</td><td>All tables</td><td>ALL (superuser)</td></tr>
+    {% for p in privs %}<tr><td>{{ p.username }}</td><td>{{ p.table_name }}</td><td>{{ p.p }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  <p class="hint">Users: {{ users|join(', ') }}</p>
+</div>
+{% endblock %}

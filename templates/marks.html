@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Enter Marks{% endblock %}
+{% block sub %}Input marks, the app calculates percentage, grade and status, then stores them{% endblock %}
+{% block content %}
+<div class="two">
+  <div class="card">
+    <h2>New exam result</h2><p class="sub">Entering marks again for the same student and exam updates the result.</p>
+    {% if not studs or not exams %}<div class="msg bad">Add at least one student and one exam first.</div>{% endif %}
+    <form method="post">
+      <label>Exam</label>
+      <select name="exam_id" id="exam" required><option value="">Select exam</option>
+        {% for e in exams %}<option value="{{ e.exam_id }}" data-max="{{ e.max_marks }}" data-pass="{{ e.pass_marks }}">{{ e.subject }} (max {{ e.max_marks }})</option>{% endfor %}</select>
+      <label>Student</label>
+      <select name="student_id" required><option value="">Select student</option>
+        {% for s in studs %}<option value="{{ s.student_id }}">{{ s.name }} - {{ s.student_id }}</option>{% endfor %}</select>
+      <label>Marks obtained</label>
+      <input name="marks" id="marks" type="number" step="0.5" min="0" required>
+      <p class="hint" id="hint">Pick an exam to see the allowed range.</p>
+      <div class="actions"><button class="btn">Save and process</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>All results</h2><p class="sub">{{ rows|length }} result(s) stored in MARKS and RESULT</p>
+    <div class="tw"><table class="dt">
+      <thead><tr><th>Student</th><th>Subject</th><th>Marks</th><th>Percent</th><th>Grade</th><th>Status</th><th class="nosort"></th></tr></thead>
+      <tbody>{% for r in rows %}<tr>
+        <td>{{ r.name }}</td><td>{{ r.subject }}</td><td>{{ r.marks|round(1) }}/{{ r.max_marks }}</td><td>{{ r.percentage }}%</td>
+        <td><span class="gr gr-{{ r.grade|replace('+','p') }}">{{ r.grade }}</span></td>
+        <td><span class="pill {{ 'pass' if r.status=='Pass' else 'fail' }}">{{ r.status }}</span></td>
+        <td><form method="post" action="/marks/delete/{{ r.student_id }}/{{ r.exam_id }}" data-confirm="Delete this result?"><button class="ib red" title="Delete">{{ icon('trash') }}</button></form></td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    {% if not rows %}<div class="empty">No results yet.</div>{% endif %}
+  </div>
+</div>
+<script>
+const ex = document.getElementById('exam'), mk = document.getElementById('marks'), h = document.getElementById('hint');
+ex.onchange = () => { const o = ex.selectedOptions[0];
+  if (!o.dataset.max) { h.textContent = 'Pick an exam to see the allowed range.'; mk.removeAttribute('max'); return; }
+  mk.max = o.dataset.max; h.textContent = 'Allowed: 0 to ' + o.dataset.max + '. Pass mark: ' + o.dataset.pass + '.'; };
+</script>
+{% endblock %}

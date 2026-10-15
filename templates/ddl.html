@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_result.html" import show %}
+{% block title %}DDL{% endblock %}
+{% block sub %}Data Definition Language: CREATE, ALTER, DROP{% endblock %}
+{% block content %}
+{{ show(result) }}
+<div class="card"><h2>Tables in database</h2><p class="sub">Newly created tables appear here.</p>
+  <div class="checks">{% for t in tables %}<span class="pill pass" style="background:#f1ebfd;color:#6c3fc5">{{ t }}</span>{% endfor %}</div></div>
+<div class="card">
+  <h2>Create table</h2><p class="sub">Name your table and add as many columns as you need.</p>
+  <form method="post"><input type="hidden" name="action" value="create">
+    <label>Table name</label><input name="table" placeholder="e.g. HALL_TICKET" required>
+    <label>Columns</label><div id="cols"></div>
+    <div class="actions"><button type="button" class="btn ghost" onclick="addRow()">+ Add column</button></div>
+    <label>Foreign key (optional)</label>
+    <div class="grid"><input name="fk_col" placeholder="column in this table"><input name="fk_table" placeholder="referenced table"><input name="fk_ref" placeholder="referenced column"></div>
+    <div class="actions"><button class="btn">Create table</button></div>
+  </form>
+</div>
+<div class="cols" style="grid-template-columns:1.4fr 1fr">
+  <div class="card">
+    <h2>Alter table</h2><p class="sub">Add a column, rename a column, rename the table, or drop a column.</p>
+    <form method="post">
+      <div class="grid">
+        <div><label>Table</label><select name="table">{% for t in tables %}<option>{{ t }}</option>{% endfor %}</select></div>
+        <div><label>Column name</label><input name="alt_col" placeholder="existing or new column"></div>
+        <div><label>Data type (for add)</label><select name="alt_type">{% for t in types %}<option>{{ t }}</option>{% endfor %}</select></div>
+        <div><label>New name (for rename)</label><input name="new_name" placeholder="new name"></div>
+      </div>
+      <div class="actions">
+        <button class="btn" name="action" value="add">Add column</button>
+        <button class="btn ghost" name="action" value="rename_col">Rename column</button>
+        <button class="btn ghost" name="action" value="rename_table">Rename table</button>
+        <button class="btn ghost" name="action" value="dropcol">Drop column</button>
+      </div>
+      <p class="hint">STUDENT, EXAM, MARKS and RESULT are core tables: only Add column is allowed on them. Create your own table to demo the rest.</p>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Drop table</h2><p class="sub">Permanently removes the table and its data.</p>
+    <form method="post" data-confirm="Drop this table and all its data?"><input type="hidden" name="action" value="drop">
+      <label>Table</label><select name="table">{% for t in tables %}<option>{{ t }}</option>{% endfor %}</select>
+      <div class="actions"><button class="btn red">Drop table</button></div>
+    </form>
+  </div>
+</div>
+<script>
+const T = {{ types|tojson }}, C = {{ cons|tojson }};
+const opts = a => a.map(x => '<option value="' + x + '">' + (x || 'No constraint') + '</option>').join('');
+function addRow() {
+  const d = document.createElement('div'); d.className = 'colrow';
+  d.innerHTML = '<div><label>Name</label><input name="col_name" placeholder="column name"></div><div><label>Type</label><select name="col_type">' + opts(T) +
+    '</select></div><div><label>Constraint</label><select name="col_con">' + opts(C) + '</select></div><button type="button" class="ib red" title="Remove" onclick="this.parentNode.remove()">&times;</button>';
+  document.getElementById('cols').appendChild(d);
+}
+addRow(); addRow();
+</script>
+{% endblock %}

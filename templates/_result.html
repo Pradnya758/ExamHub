@@ -1,0 +1,22 @@
+{% macro show(r) %}
+{% if r %}
+<div class="card" id="result">
+  <h2>Result</h2>
+  {% if r.error %}<div class="msg bad">{{ r.error }}</div>{% endif %}
+  {% if r.message %}<div class="msg ok">{{ r.message }}</div>{% endif %}
+  {% if r.sql %}
+  <div class="codehead"><span>SQL executed</span><button type="button" data-copy="#sqlbox">Copy</button></div>
+  <pre class="sql" id="sqlbox">{{ r.sql }}{% if r.params %}
+
+-- values: {{ r.params }}{% endif %}</pre>
+  {% endif %}
+  {% if r.columns %}
+  <div class="tw" style="margin-top:14px"><table>
+    <thead><tr>{% for c in r.columns %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in r.rows %}<tr>{% for v in row %}<td>{{ '' if v is none else v }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table></div>
+  {% if not r.rows %}<div class="empty">No rows found.</div>{% endif %}
+  {% endif %}
+</div>
+{% endif %}
+{% endmacro %}

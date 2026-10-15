@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}{{ c.title }}{% endblock %}
+{% block sub %}{{ c.sub }}{% endblock %}
+{% block content %}
+<div class="two">
+  <div class="card">
+    <h2 id="formtitle">New {{ c.singular }}</h2><p class="sub">Type the details and save them to the database.</p>
+    <form method="post" id="entform">
+      <input type="hidden" name="editing" value="0">
+      {% for key,label,kind in c.fields %}
+        <label>{{ label }}</label>
+        {% if kind.startswith('select:') %}
+          <select name="{{ key }}" required><option value="">Select</option>{% for o in kind[7:].split(',') %}<option>{{ o }}</option>{% endfor %}</select>
+        {% else %}
+          <input name="{{ key }}" type="{{ kind }}" {% if kind == 'number' %}min="1" step="1"{% endif %} {% if key != 'email' %}required{% endif %}>
+        {% endif %}
+      {% endfor %}
+      <div class="actions"><button class="btn">Save {{ c.singular|lower }}</button><button type="button" class="btn ghost" id="cancel" hidden>Cancel</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>All {{ c.title|lower }}</h2><p class="sub">{{ rows|length }} record(s) in table {{ c.table }}</p>
+    <div class="tw"><table class="dt">
+      <thead><tr>{% for key,label,kind in c.fields %}<th>{{ label }}</th>{% endfor %}<th class="nosort">Actions</th></tr></thead>
+      <tbody>{% for r in rows %}<tr>
+        {% for key,label,kind in c.fields %}<td>{{ r[key] if r[key] is not none else '' }}</td>{% endfor %}
+        <td class="act"><button type="button" class="ib" title="Edit" data-edit='{{ r|tojson }}'>{{ icon('marks') }}</button>
+          <form method="post" action="/{{ ent }}/delete/{{ r[c.pk] }}" data-confirm="Delete this record and its related results?"><button class="ib red" title="Delete">{{ icon('trash') }}</button></form></td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    {% if not rows %}<div class="empty">No {{ c.title|lower }} yet. Add one using the form.</div>{% endif %}
+  </div>
+</div>
+{% endblock %}

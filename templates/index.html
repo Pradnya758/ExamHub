@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block sub %}Live numbers from the database{% endblock %}
+{% block content %}
+<div class="stats">
+  <div class="stat s1"><div><b>{{ n_stu }}</b><span>Students</span></div>{{ icon('students') }}</div>
+  <div class="stat s2"><div><b>{{ n_exam }}</b><span>Exams</span></div>{{ icon('exams') }}</div>
+  <div class="stat s3"><div><b>{{ pass_pct }}%</b><span>Pass rate</span></div>{{ icon('pct') }}</div>
+  <div class="stat s4"><div><b>{{ n_res }}</b><span>Results entered</span></div>{{ icon('results') }}</div>
+</div>
+
+{% if n_res == 0 %}
+<div class="card empty"><h2>No data yet</h2><p class="sub">Add students, exams and marks yourself, or fill the database with a demo set.</p>
+<form method="post" action="/seed"><button class="btn">Load sample data</button></form></div>
+{% else %}
+<div class="cols">
+  <div class="card">
+    <h2>Subject-wise performance</h2><p class="sub">Average and highest percentage per exam</p>
+    <div class="legend"><span><i style="background:#6c3fc5"></i>Average</span><span><i style="background:#f59e5b"></i>Highest</span></div>
+    <svg viewBox="0 0 620 225" width="100%" role="img" aria-label="Bar chart of average and highest percentage per subject">
+      {% for v in [0,25,50,75,100] %}<line x1="30" x2="610" y1="{{ 190 - v*1.6 }}" y2="{{ 190 - v*1.6 }}" stroke="#eee9f8"/><text x="24" y="{{ 194 - v*1.6 }}" font-size="10" fill="#9a95ad" text-anchor="end">{{ v }}</text>{% endfor %}
+      {% for b in bars %}
+        <rect x="{{ b.x }}" y="{{ 190 - b.ah }}" width="{{ b.w }}" height="{{ b.ah }}" rx="5" fill="#6c3fc5"><title>{{ b.label }} average {{ b.avg }}%</title></rect>
+        <rect x="{{ b.x + b.w + 5 }}" y="{{ 190 - b.hh }}" width="{{ b.w }}" height="{{ b.hh }}" rx="5" fill="#f59e5b"><title>{{ b.label }} highest {{ b.hi }}%</title></rect>
+        <text x="{{ b.cx }}" y="210" font-size="11" fill="#6d6884" text-anchor="middle">{{ b.label }}</text>
+      {% endfor %}
+    </svg>
+  </div>
+  <div class="card">
+    <h2>Pass vs Fail</h2><p class="sub">All results</p>
+    <svg viewBox="0 0 160 160" width="190" style="display:block;margin:0 auto">
+      <circle cx="80" cy="80" r="60" fill="none" stroke="#f3b3b3" stroke-width="22"/>
+      <circle cx="80" cy="80" r="60" fill="none" stroke="#6c3fc5" stroke-width="22" stroke-dasharray="{{ (376.99*pass_pct/100)|round(1) }} 377" transform="rotate(-90 80 80)"/>
+      <text x="80" y="82" text-anchor="middle" font-size="26" font-weight="700" fill="#1f1b2e">{{ n_res }}</text>
+      <text x="80" y="100" text-anchor="middle" font-size="11" fill="#7d7893">results</text>
+    </svg>
+    <div class="legend" style="justify-content:center;margin-top:12px"><span><i style="background:#6c3fc5"></i>Pass {{ passed }}</span><span><i style="background:#f3b3b3"></i>Fail {{ failed }}</span></div>
+  </div>
+</div>
+
+<div class="cols">
+  <div class="card">
+    <h2>Star students</h2><p class="sub">Highest average percentage</p>
+    <div class="tw"><table><thead><tr><th>Name</th><th>ID</th><th>Dept</th><th>Exams</th><th>Average</th></tr></thead><tbody>
+    {% for s in top %}<tr><td><span class="av">{{ s.name|initials }}</span>{{ s.name }}</td><td>{{ s.student_id }}</td><td>{{ s.dept }}</td><td>{{ s.n }}</td><td><b>{{ s.avg }}%</b></td></tr>{% endfor %}
+    </tbody></table></div>
+  </div>
+  <div class="card">
+    <h2>Recent results</h2><p class="sub">Latest marks entered</p>
+    <div class="list">{% for r in recent %}
+      <div class="li"><span class="av">{{ r.name|initials }}</span><div><b>{{ r.name }}</b><small>{{ r.subject }} &middot; {{ r.marks|int }}/{{ r.max_marks }}</small></div><span class="pill {{ 'pass' if r.status=='Pass' else 'fail' }}">{{ r.status }}</span></div>
+    {% endfor %}</div>
+  </div>
+</div>
+{% endif %}
+
+<div class="tiles">
+  <a class="tile" href="/ddl"><b>{{ icon('ddl') }}DDL</b>CREATE, ALTER and DROP tables with columns you choose.</a>
+  <a class="tile" href="/dml"><b>{{ icon('dml') }}DML</b>INSERT, UPDATE, DELETE and SELECT rows in any table.</a>
+  <a class="tile" href="/dcl"><b>{{ icon('dcl') }}DCL</b>CREATE USER, GRANT and REVOKE privileges.</a>
+</div>
+{% if n_res %}<form method="post" action="/seed" class="noprint"><button class="btn ghost">Load more sample data</button></form>{% endif %}
+{% endblock %}

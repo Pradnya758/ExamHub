@@ -1,0 +1,33 @@
+{% from "_icons.html" import icon %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Dashboard{% endblock %} - ExamHub</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% set main_nav = [('/','dash','Dashboard'),('/students','students','Students'),('/exams','exams','Exams'),('/marks','marks','Enter Marks'),('/results','results','Results'),('/reports','reports','Reports')] %}
+{% set db_nav = [('/ddl','ddl','DDL'),('/dml','dml','DML'),('/dcl','dcl','DCL')] %}
+<div class="shell">
+  <aside class="side">
+    <div class="logo"><i>E</i>ExamHub</div>
+    <div class="grp">Examination</div>
+    {% for u,i,l in main_nav %}<a href="{{ u }}" class="{{ 'on' if request.path == u }}">{{ icon(i) }}{{ l }}</a>{% endfor %}
+    <div class="grp">Database operations</div>
+    {% for u,i,l in db_nav %}<a href="{{ u }}" class="{{ 'on' if request.path == u }}">{{ icon(i) }}{{ l }}</a>{% endfor %}
+    <div class="foot">Examination Management System<br>DBMS PAT</div>
+  </aside>
+  <div class="main">
+    <div class="top">
+      <button class="menu" aria-label="Menu">&#9776;</button>
+      <div class="grow"><h1>{{ self.title() }}</h1><p>{% block sub %}{% endblock %}</p></div>
+      <div class="chip"><b>AD</b><span>Admin</span></div>
+    </div>
+    <div class="page">{% block content %}{% endblock %}</div>
+  </div>
+</div>
+<div class="toasts">{% for cat, m in get_flashed_messages(with_categories=true) %}<div class="toast {{ cat }}">{{ m }}</div>{% endfor %}</div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
